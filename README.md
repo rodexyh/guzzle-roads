@@ -24,9 +24,14 @@ one keeps its old ones.
 
 ## Licence
 
-**The data in this repository — every pack and `roads-index.json` — is licensed under the
-[Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/).**
+**The road data in this repository — every road pack and `roads-index.json` (release `v1`) — is licensed
+under the [Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/).**
 The full text is in [`LICENSE`](LICENSE); who to credit is in [`ATTRIBUTION.md`](ATTRIBUTION.md).
+
+**The province and state outlines (release `outlines-v1`) are not OpenStreetMap data and not under the ODbL.**
+The Canadian outlines are adapted from Statistics Canada under the Statistics Canada Open Licence; the U.S.
+outlines come from the U.S. Census Bureau. The exact credit lines are in [`ATTRIBUTION.md`](ATTRIBUTION.md)
+and under "Province and state outlines" below.
 
 The build pipeline that produces these packs is **not** in this repository and is not covered by this
 licence. It lives in the Driveary app repository (`tools/road-pack/`); the ODbL attaches to the database,
@@ -136,6 +141,51 @@ The dated URL is the exact file; its sha256 is what the build checked before sta
 | `ca-sk` | 2026-09-28T20:23:05Z | <https://download.geofabrik.de/north-america/canada/saskatchewan-260928.osm.pbf> | `825d5d9c5536d33955ed2cda07bf9ef6209fed16825bd43d28d40b503c4f3220` |
 | `ca-yt` | 2026-09-28T20:23:05Z | <https://download.geofabrik.de/north-america/canada/yukon-260928.osm.pbf> | `12d9a09a79bc0786a2c21ac91e29b0684100c20a6f45ba8200c7fe1b353ce6c4` |
 <!-- END generated: sources -->
+
+## Province and state outlines
+
+A second release, **`outlines-v1`**, holds one small SQLite database per country with the simplified outline
+of every province, territory or state (`outlines-<country>-<sha16>.sqlite.gz`, gzip), plus
+`outlines-index.json`, which lists each file with its size, sha256 and source. The app uses them to tell which
+province a road outside any covered city belongs to, and to measure and draw a province. Same content
+addressing as the road packs: the `<sha16>` is the first 16 hex digits of the file's sha256.
+
+<!-- BEGIN generated: outlines-summary (tools/road-pack/public-repo/render_outlines.py in the app repository; do not edit by hand) -->
+Release **outlines-v1**: 2 countries (Canada 13 regions, United States 51 regions), 2 packs, 603,427 bytes, plus `outlines-index.json` (1,970 bytes, sha256 `4e0a060d55c13e0265b219fce1fdb4a53ec85ae043968592e616fe11a5c72eb9`).
+<!-- END generated: outlines-summary -->
+
+```text
+https://github.com/rodexyh/guzzle-roads/releases/download/outlines-v1/<file name>
+```
+
+The app downloads the same bytes from the CDN at `outlines/v1/<file name>`.
+
+### Files and sources
+
+<!-- BEGIN generated: outlines-files (render_outlines.py; do not edit by hand) -->
+| Country | Regions | File | Bytes | Source | As of |
+| --- | ---: | --- | ---: | --- | --- |
+| `ca` Canada | 13 | `outlines-ca-df6a7088a5dc16e8.sqlite.gz` | 459,374 | Statistics Canada, 2021 Cartographic Boundary Files, provinces and territories (lpr_000b21a_e) | 2021-11-17 |
+| `us` United States | 51 | `outlines-us-38069eb3bcdc8ea9.sqlite.gz` | 144,053 | U.S. Census Bureau, 2024 Cartographic Boundary Files, states, 1:500,000 (cb_2024_us_state_500k) | 2024-01-01 |
+| | | **Total** | **603,427** | | |
+<!-- END generated: outlines-files -->
+
+### Verify
+
+<!-- BEGIN generated: outlines-sha256sums (render_outlines.py; do not edit by hand) -->
+```text
+df6a7088a5dc16e8ef62c817924fcf85f68016ac036811e4ba9096168cd9bcfb  outlines-ca-df6a7088a5dc16e8.sqlite.gz
+38069eb3bcdc8ea9758b36f28e72df76e147367343df99d5882ef76df491dee1  outlines-us-38069eb3bcdc8ea9.sqlite.gz
+4e0a060d55c13e0265b219fce1fdb4a53ec85ae043968592e616fe11a5c72eb9  outlines-index.json
+```
+<!-- END generated: outlines-sha256sums -->
+
+### How the outlines were made
+
+From each official file: read the boundaries (the Statistics Canada file is in Statistics Canada Lambert and is
+converted to latitude and longitude), drop islands smaller than 1 km² (the total dropped is recorded in each
+pack's `meta` table), simplify every boundary to within 500 m, encode the rings, build the SQLite file, and
+compress it with `gzip -9 -n` so the same input gives the same bytes.
 
 ## How the packs were made
 
